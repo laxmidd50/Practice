@@ -3,35 +3,32 @@
 #include <math.h>
 #include "SudokuSolver.h"
 
-void Solve(const char* const board, int n);
-char* SolveHelper(const char* const board, int n, int row, int col);
-void PrintBoard(const char* const board, int n);
-char* MakeCopyBoard(const char* const board, int n);
-int ValidDigit(const char* const board, int n, int row, int col, int digit);
+static int SolveHelper(char* const board, int row, int col);
+static void PrintBoard(const char* const board);
+static int ValidDigit(const char* const board, int row, int col, int digit);
+static int boxsize, n;
 
-int boxsize;
-
-void Solve(const char* const board, int n)
+int Solve(char* const board, int puzzle_size)
 {
+	n = puzzle_size;
 	boxsize = sqrt((double)n);
 	if (n != boxsize*boxsize)
 		return;
-	PrintBoard((char*)board, n);
-	char* result = SolveHelper(board, n, 0, 0);
-	if (result != NULL)
+	PrintBoard((char*)board);
+	if (SolveHelper(board, 0, 0))
 	{
-		PrintBoard(result, n);
-		free(result);
+		PrintBoard(board);
+		return 1;
 	}
 	else
 	{
 		printf("Can't be solved!\n");
+		return 0;
 	}
 }
 
-char* SolveHelper(const char* const board, int n, int row, int col)
+static int SolveHelper(char* const board, int row, int col)
 {
-	char* board2 = MakeCopyBoard(board, n);
 	while (row < n && board[row*n+col] != 0)
 	{
 		col++;
@@ -42,23 +39,25 @@ char* SolveHelper(const char* const board, int n, int row, int col)
 		}
 	}
 	if (row >= n)
-		return board2;
+		return 1;
 
-	int digit;
-	char * result = NULL;
-	for (digit = 1; digit <= n && result == NULL; digit++)
+	int digit, result = 0;
+	for (digit = 1; digit <= n && !result; digit++)
 	{
-		if (ValidDigit(board2, n, row, col, digit))
+		if (ValidDigit(board, row, col, digit))
 		{
-			board2[row*n+col] = digit;
-			result = SolveHelper(board2, n, row, col);
+			board[row*n+col] = digit;
+			if (SolveHelper(board, row, col))
+			{
+				return 1;
+			}
 		}
 	}
-	free(board2);
-	return result;
+	board[row*n+col] = 0;
+	return 0;
 }
 
-void PrintBoard(const char* const board, int n)
+static void PrintBoard(const char* const board)
 {
 	int row, col;
 	for (row = 0; row < n; row++)
@@ -83,23 +82,7 @@ void PrintBoard(const char* const board, int n)
 	printf("\n\n");
 }
 
-char* MakeCopyBoard(const char* const board, int n)
-{
-	char* newboard = malloc(sizeof(char)*n*n);
-	if (newboard == NULL)
-	{
-		printf("Malloc error\n");
-		exit(1);
-	}
-	int row, col;
-	for (row = 0; row < n; row++)
-		for (col = 0; col < n; col++)
-			newboard[row*n+col] = board[row*n+col];
-	return newboard;
-}
-
-
-int ValidDigit(const char* const board, int n, int row, int col, int digit)
+static int ValidDigit(const char* const board, int row, int col, int digit)
 {
 	//printf("%d %d %d %d %p\n", n, row, col, digit, board);
 	if (digit > n || digit < 1)
