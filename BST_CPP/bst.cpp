@@ -1,7 +1,6 @@
 #include "bst.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "../Queue/Queue.h"
 
 struct b_node* BST_NewNode(int x)
 {
@@ -78,7 +77,6 @@ void BST_Print(struct BST* bst)
 		printf(" ");
 	printf("%d", tempnode->data);
 
-	struct Queue *q = Queue_New();
 
 
 
